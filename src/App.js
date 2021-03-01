@@ -74,7 +74,7 @@ const useStyles = makeStyles({
 export default function App() {
   const classes = useStyles();
   const [selectedType, setSelectedType] = useState(0);
-  const [thickness, setThickness] = useState("");
+  const [thickness, setThickness] = useState(null);
   const [l1, setL1] = useState("");
   const [l2, setL2] = useState("");
   const [l3, setL3] = useState("");
@@ -83,45 +83,7 @@ export default function App() {
   const [totalLength, setTotalLength] = useState(null);
 
   const findK = (thickness) => {
-    if (
-      !parseFloat(thickness) ||
-      ![0.5, 1, 1.5, 2, 2.5, 3].includes(parseFloat(thickness))
-    )
-      return {
-        error:
-          "thickness should be an integer and be one of the following: [0.5, 1, 1.5, 2, 2.5, 3]"
-      };
-    thickness = parseFloat(thickness);
-    let val = {};
-    switch (thickness) {
-      case 0.5:
-        val = { k: 0.15 };
-        break;
-
-      case 1:
-        val = { k: 0.3 };
-        break;
-
-      case 1.5:
-        val = { k: 0.45 };
-        break;
-
-      case 2:
-        val = { k: 0.6 };
-        break;
-
-      case 2.5:
-        val = { k: 0.75 };
-        break;
-
-      case 3:
-        val = { k: 0.9 };
-        break;
-
-      default:
-        val = { k: null };
-    }
-    return val;
+    return {k: thickness * 0.3};
   };
 
   const getTotalLength = (type, lengths, t) => {
@@ -155,7 +117,7 @@ export default function App() {
   };
 
   const handleThicknessChange = (e) => {
-    setThickness(e.target.value);
+    setThickness(parseFloat(e.target.value));
   };
 
   const handleLengthChange = (e, idx) => {
@@ -183,6 +145,7 @@ export default function App() {
 
   const handleButtonClick = () => {
     let lengths = [l1, l2, l3, l4, l5].slice(0, selectedType + 1);
+    console.log(getTotalLength(selectedType, lengths, thickness))
     setTotalLength(getTotalLength(selectedType, lengths, thickness));
   };
 
@@ -207,7 +170,7 @@ export default function App() {
             onClick={(e) => handleGridClick(e, index + 1)}
             className={`${classes.imageGrid} ${
               selectedType == index + 1 ? classes.selected : ""
-            }`}
+              }`}
             key={index}
           >
             <img src={image} className={classes.image} />
@@ -225,20 +188,20 @@ export default function App() {
         </Typography>
         <br />
         <FormControl style={{ marginTop: 10 }}>
-          <InputLabel>Thickness</InputLabel>
-          <Select
-            style={{ width: "200px" }}
-            value={thickness}
-            disabled={!selectedType}
-            onChange={(e) => handleThicknessChange(e)}
-          >
-            <MenuItem value={0.5}>0.50 mm</MenuItem>
-            <MenuItem value={1}>1.00 mm</MenuItem>
-            <MenuItem value={1.5}>1.50 mm</MenuItem>
-            <MenuItem value={2}>2.00 mm</MenuItem>
-            <MenuItem value={2.5}>2.50 mm</MenuItem>
-            <MenuItem value={3}>3.00 mm</MenuItem>
-          </Select>
+          <TextField 
+            label="Enter material thickness" 
+            disabled={!selectedType} 
+            variant="filled"
+            type="number" 
+            value={thickness} 
+            error={thickness < 0 }
+            helperText={thickness < 0 ? "Thickness must be a positive integer": ""}
+            inputProps={{min: 0}}
+            InputProps={{
+              endAdornment: "mm"
+            }}
+            onChange={e => handleThicknessChange(e)} 
+          />
           <FormHelperText>
             {!selectedType
               ? "Select any type to get started."
@@ -257,7 +220,7 @@ export default function App() {
                   type="number"
                   variant="outlined"
                   inputProps={{ min: 0, step: 0.25 }}
-                  InputLabelProps={{shrink: !!eval("l" + (idx + 1))}}
+                  InputLabelProps={{ shrink: !!eval("l" + (idx + 1)) }}
                 />
               </Grid>
             ))}
@@ -271,7 +234,8 @@ export default function App() {
                 (e, i) => e === "" && i <= selectedType
               ) === "" ||
               [l1, l2, l3, l4, l5].find((e) => e < 0) ||
-              !thickness
+              !thickness ||
+              thickness < 0
             }
             onClick={() => handleButtonClick()}
             style={{ marginBottom: 10 }}
@@ -279,8 +243,8 @@ export default function App() {
             Calculate Total Length
           </Button>
         ) : (
-          <></>
-        )}
+            <></>
+          )}
         {totalLength && (
           <Typography variant="h5">
             Total Length: <strong>{totalLength}</strong>
