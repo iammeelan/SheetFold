@@ -145,7 +145,6 @@ export default function App() {
 
   const handleButtonClick = () => {
     let lengths = [l1, l2, l3, l4, l5].slice(0, selectedType + 1);
-    console.log(getTotalLength(selectedType, lengths, thickness))
     setTotalLength(getTotalLength(selectedType, lengths, thickness));
   };
 
